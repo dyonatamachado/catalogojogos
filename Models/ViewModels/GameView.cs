@@ -1,27 +1,20 @@
 using System;
 
-namespace CatalogoDeJogos.Core.Entities
+namespace CatalogoDeJogos.Models.ViewModels
 {
-    public class Game
+    public class GameView
     {
-        public Game(string name, string publisher, double price)
+        public GameView(Guid id, string name, string publisher, double price)
         {
-            Id = Guid.NewGuid();
+            Id = id;
             Name = name;
             Publisher = publisher;
             Price = price;
-            Active = true;
         }
 
         public Guid Id { get; private set; }
         public string Name { get; private set; }
         public string Publisher { get; private set; }
         public double Price { get; private set; }
-        public bool Active { get; private set; }
-
-        public void Deactivate()
-        {
-            Active = false;
-        }
     }
 }
