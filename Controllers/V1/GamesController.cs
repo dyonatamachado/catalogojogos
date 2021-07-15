@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CatalogoDeJogos.Controllers
 {
     [ApiController]
-    [Route("v1/[controller]")]
+    [Route("[controller]")]
     public class GamesController : ControllerBase
     {
         [HttpGet]
@@ -45,7 +45,7 @@ namespace CatalogoDeJogos.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:guid")]
+        [HttpDelete("{id:guid}")]
         public IActionResult DeleteGame(Guid id)
         {
             // return NotFound();
