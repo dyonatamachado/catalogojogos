@@ -5,6 +5,7 @@ using CatalogoDeJogos.Core.Entities;
 using CatalogoDeJogos.Models.InputModels;
 using CatalogoDeJogos.Models.ViewModels;
 using CatalogoDeJogos.Persistence;
+using CatalogoDeJogos.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatalogoDeJogos.Controllers
@@ -42,10 +43,19 @@ namespace CatalogoDeJogos.Controllers
             var gameView = new GameView(game.Id, game.Name, game.Publisher, game.Price);
             return Ok(gameView);
         }
-
+        
         [HttpPost]
         public IActionResult PostGame([FromBody] CreateGame inputModel)
-        {
+        {   
+            var gameService = new GameService(_dbContext);
+            var resultOfGameService = gameService.CheckIfGameIsAlreadyRegistered(inputModel);
+
+            if(!resultOfGameService)
+            {
+                var guid = gameService.GetGuidOfGameAlreadyRegistered(inputModel.Name, inputModel.Publisher);
+                return BadRequest($"This game is already registered with Id: {guid}");
+            }
+            
             var game = new Game(inputModel.Name, inputModel.Publisher, inputModel.Price);
 
             _dbContext.Games.Add(game);
@@ -71,6 +81,9 @@ namespace CatalogoDeJogos.Controllers
         [HttpPatch("{id:guid}/price/{price:double}")]
         public IActionResult PatchGame(Guid id, double price)
         {
+            if(price < 1 || price > 1000)
+                return BadRequest("Price must be between R$ 1.00 and R$ 1,000.00");
+            
             var game = _dbContext.Games.SingleOrDefault(g => g.Id == id);
 
             if(game == null || !game.Active)
