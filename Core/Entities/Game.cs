@@ -23,5 +23,15 @@ namespace CatalogoDeJogos.Core.Entities
         {
             Active = false;
         }
+        public void UpdateGame(string name, string publisher, double price)
+        {
+            Name = name;
+            Publisher = publisher;
+            Price = price;
+        }
+        public void UpdatePrice(double price)
+        {
+            Price = price;
+        }
     }
 }

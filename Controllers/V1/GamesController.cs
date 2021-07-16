@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using CatalogoDeJogos.Core.Entities;
 using CatalogoDeJogos.Models.InputModels;
 using CatalogoDeJogos.Models.ViewModels;
 using CatalogoDeJogos.Persistence;
@@ -19,11 +20,15 @@ namespace CatalogoDeJogos.Controllers
         }
 
 
-
+        [HttpGet]
         public IActionResult GetGames()
         {
-            // return NoContent();
-            return Ok();
+            var allGames = _dbContext.Games.Where(g => g.Active).ToList();
+            
+            var allGamesView = allGames
+                .Select(g => new GameView(g.Id, g.Name, g.Publisher, g.Price));
+            
+            return Ok(allGamesView);
         }
 
         [HttpGet("{id:guid}")]
@@ -31,7 +36,7 @@ namespace CatalogoDeJogos.Controllers
         {   
             var game = _dbContext.Games.SingleOrDefault(g => g.Id == id);
 
-            if(game == null)
+            if(game == null || !game.Active)
                 return NotFound();
             
             var gameView = new GameView(game.Id, game.Name, game.Publisher, game.Price);
@@ -41,28 +46,53 @@ namespace CatalogoDeJogos.Controllers
         [HttpPost]
         public IActionResult PostGame([FromBody] CreateGame inputModel)
         {
-            // return BadRequest();
-            return CreatedAtAction(nameof(GetGameById), new { id = 10}, inputModel);
+            var game = new Game(inputModel.Name, inputModel.Publisher, inputModel.Price);
+
+            _dbContext.Games.Add(game);
+            _dbContext.SaveChanges();
+
+            return CreatedAtAction(nameof(GetGameById), new {id = game.Id}, inputModel);
         }
 
         [HttpPut("{id:guid}")]
         public IActionResult PutGame(Guid id, [FromBody] UpdateGame inputModel)
         {
-            // return NotFound();
+            var game = _dbContext.Games.SingleOrDefault(g => g.Id == id);
+
+            if(game == null || !game.Active)
+                return NotFound();
+            
+            game.UpdateGame(inputModel.Name, inputModel.Publisher, inputModel.Price);
+            _dbContext.SaveChanges();
+
             return NoContent();
         }
 
         [HttpPatch("{id:guid}/price/{price:double}")]
         public IActionResult PatchGame(Guid id, double price)
         {
-            // return NotFound();
+            var game = _dbContext.Games.SingleOrDefault(g => g.Id == id);
+
+            if(game == null || !game.Active)
+                return NotFound();
+            
+            game.UpdatePrice(price);
+            _dbContext.SaveChanges();
+
             return NoContent();
         }
 
         [HttpDelete("{id:guid}")]
         public IActionResult DeleteGame(Guid id)
         {
-            // return NotFound();
+            var game = _dbContext.Games.SingleOrDefault(g => g.Id == id);
+
+            if(game == null || !game.Active)
+                return NotFound();
+            
+            game.Deactivate();
+            _dbContext.SaveChanges();
+
             return NoContent();
         }
     }
