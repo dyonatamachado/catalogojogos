@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CatalogoDeJogos.Models.InputModels;
 using CatalogoDeJogos.Models.ViewModels;
+using CatalogoDeJogos.Persistence;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatalogoDeJogos.Controllers
@@ -10,7 +12,14 @@ namespace CatalogoDeJogos.Controllers
     [Route("[controller]")]
     public class GamesController : ControllerBase
     {
-        [HttpGet]
+        private readonly GamesContext _dbContext;
+        public GamesController(GamesContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+
+
         public IActionResult GetGames()
         {
             // return NoContent();
@@ -20,8 +29,13 @@ namespace CatalogoDeJogos.Controllers
         [HttpGet("{id:guid}")]
         public IActionResult GetGameById(Guid id)
         {   
-            // return NotFound();
-            return Ok();
+            var game = _dbContext.Games.SingleOrDefault(g => g.Id == id);
+
+            if(game == null)
+                return NotFound();
+            
+            var gameView = new GameView(game.Id, game.Name, game.Publisher, game.Price);
+            return Ok(gameView);
         }
 
         [HttpPost]
